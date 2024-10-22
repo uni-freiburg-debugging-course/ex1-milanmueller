@@ -4,16 +4,41 @@ Implement the following grammar
 <operator> ::= + | - | * | /
 <expr> ::= ( <expr> ) | (operator <expr> <expr> ) | ( simplify <expr> )
 */
-
-use crate::tokenizer::{Identifier, Operator, Token, Tokenizer};
+use crate::tokenizer::{Token, Tokenizer};
 use core::fmt;
+use lib::{Identifier, Operator};
 use std::iter::Peekable;
 
+// Define Enums and how to print them
 #[derive(Debug)]
 pub enum ASTNode {
     Numeral(i32),
     Operator(Operator, Box<ASTNode>, Box<ASTNode>),
     Simplify(Box<ASTNode>),
+}
+
+impl ASTNode {
+    fn print(&self) -> String {
+        match self {
+            Self::Numeral(number) => format!("{}", number),
+            Self::Operator(op, a, b) => {
+                let op_str = match op {
+                    Operator::Add => "+",
+                    Operator::Sub => "-",
+                    Operator::Mul => "*",
+                    Operator::Div => "/",
+                };
+                format!("{} {} {}", op_str, (*a).print(), (*b).print())
+            }
+            Self::Simplify(inner) => format!("simplify ({})", (*inner).print()),
+        }
+    }
+}
+
+impl fmt::Display for ASTNode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({})", self.print())
+    }
 }
 
 pub enum ParseError {
@@ -25,7 +50,7 @@ pub enum ParseError {
 }
 
 // Custom Error Messages
-impl fmt::Debug for ParseError {
+impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ParseError::ExpectedNumeral(e) => match e {
@@ -52,6 +77,7 @@ impl fmt::Debug for ParseError {
     }
 }
 
+// Actual implementation of the parser
 pub struct Parser<'a> {
     tokenizer: Peekable<Tokenizer<'a>>,
 }
@@ -86,23 +112,23 @@ impl<'a> Parser<'a> {
             Some(Token::Operator(op)) => match op {
                 Operator::Add => Ok(ASTNode::Operator(
                     Operator::Add,
-                    Box::new(self.parse_numeral()?),
-                    Box::new(self.parse_numeral()?),
+                    Box::new(self.parse_expr()?),
+                    Box::new(self.parse_expr()?),
                 )),
                 Operator::Sub => Ok(ASTNode::Operator(
                     Operator::Sub,
-                    Box::new(self.parse_numeral()?),
-                    Box::new(self.parse_numeral()?),
+                    Box::new(self.parse_expr()?),
+                    Box::new(self.parse_expr()?),
                 )),
                 Operator::Mul => Ok(ASTNode::Operator(
                     Operator::Mul,
-                    Box::new(self.parse_numeral()?),
-                    Box::new(self.parse_numeral()?),
+                    Box::new(self.parse_expr()?),
+                    Box::new(self.parse_expr()?),
                 )),
                 Operator::Div => Ok(ASTNode::Operator(
                     Operator::Div,
-                    Box::new(self.parse_numeral()?),
-                    Box::new(self.parse_numeral()?),
+                    Box::new(self.parse_expr()?),
+                    Box::new(self.parse_expr()?),
                 )),
             },
             Some(t) => Err(ParseError::ExpectedOperator(Some(t))),

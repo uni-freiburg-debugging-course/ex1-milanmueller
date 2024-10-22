@@ -1,15 +1,4 @@
-#[derive(Debug)]
-pub enum Identifier {
-    Simplify,
-}
-
-#[derive(Debug)]
-pub enum Operator {
-    Add,
-    Sub,
-    Div,
-    Mul,
-}
+use lib::{Identifier, Operator};
 
 #[derive(Debug)]
 pub enum Token {
@@ -40,8 +29,10 @@ impl<'a> Tokenizer<'a> {
                 break;
             }
         }
-        digits.reverse();
-        digits.iter().fold(0, |acc, &x| acc * 10 + x)
+        digits
+            .iter()
+            .enumerate()
+            .fold(0, |acc, (i, digit)| acc + (10 ^ (i as u32)) * digit)
     }
 
     fn eat_identifier(&mut self) -> Option<Identifier> {
@@ -63,11 +54,11 @@ impl<'a> Tokenizer<'a> {
     fn eat_hyphen(&mut self) -> Option<Token> {
         if let Some(c) = self.input.chars().nth(self.position) {
             match c {
-                '1'..='9' => Some(Token::Numeral(-(self.eat_number() as i32))),
                 ' ' => {
                     self.position += 1;
                     Some(Token::Operator(Operator::Sub))
                 }
+                _ if c.is_digit(10) => Some(Token::Numeral(-(self.eat_number() as i32))),
                 _ => {
                     self.position += 1;
                     None
@@ -86,7 +77,6 @@ impl<'a> Iterator for Tokenizer<'a> {
         let mut chars = self.input.chars();
         match chars.nth(self.position) {
             Some(c) => match c {
-                '1'..='9' => Some(Token::Numeral(self.eat_number() as i32)),
                 '-' => {
                     self.position += 1;
                     self.eat_hyphen()
@@ -115,6 +105,7 @@ impl<'a> Iterator for Tokenizer<'a> {
                     self.position += 1;
                     self.next()
                 }
+                _ if c.is_digit(10) => Some(Token::Numeral(self.eat_number() as i32)),
                 _ if c.is_alphabetic() => Some(Token::Identifier(self.eat_identifier()?)),
                 _ => {
                     self.position += 1;
@@ -125,5 +116,16 @@ impl<'a> Iterator for Tokenizer<'a> {
                 return None;
             }
         }
+    }
+}
+
+// Unit tests for the tokenizers functions
+mod test {
+    use super::Tokenizer;
+
+    #[test]
+    fn test_numerals() {
+        let mut tok = Tokenizer::new("10");
+        assert_eq!(tok.eat_number(), 10);
     }
 }
