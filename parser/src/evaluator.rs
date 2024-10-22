@@ -1,5 +1,4 @@
-use crate::parser::ASTNode;
-use lib::Operator;
+use lib::{ASTNode, Operator};
 
 #[derive(Debug)]
 pub enum EvaluationError {
@@ -20,7 +19,6 @@ fn simplify(node: ASTNode) -> Result<ASTNode, EvaluationError> {
             Operator::Add => Ok(add(evaluate(*a)?, evaluate(*b)?)?),
             Operator::Sub => Ok(sub(evaluate(*a)?, evaluate(*b)?)?),
             Operator::Mul => Ok(mul(evaluate(*a)?, evaluate(*b)?)?),
-            Operator::Div => Ok(div(evaluate(*a)?, evaluate(*b)?)?),
         },
         ASTNode::Numeral(_) => Ok(node),
         ASTNode::Simplify(node) => Ok(simplify(*node)?),
@@ -37,10 +35,6 @@ fn sub(a: ASTNode, b: ASTNode) -> Result<ASTNode, EvaluationError> {
 
 fn mul(a: ASTNode, b: ASTNode) -> Result<ASTNode, EvaluationError> {
     Ok(ASTNode::Numeral(evaluate_number(a)? * evaluate_number(b)?))
-}
-
-fn div(a: ASTNode, b: ASTNode) -> Result<ASTNode, EvaluationError> {
-    Ok(ASTNode::Numeral(evaluate_number(a)? / evaluate_number(b)?))
 }
 
 fn evaluate_number(node: ASTNode) -> Result<i32, EvaluationError> {

@@ -5,25 +5,64 @@ mod evaluator;
 mod parser;
 mod tokenizer;
 
+use clap::Parser;
 use evaluator::evaluate;
-use parser::Parser;
+use std::{
+    fs::File,
+    io::{self, BufRead, BufReader},
+};
 use tokenizer::Tokenizer;
 
+// Command line arguments
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Arguments {
+    // Input file (positional argument)
+    #[arg(value_name = "FILE")]
+    file: Option<String>,
+
+    // Read from standard input
+    #[arg(short = 'i', long)]
+    stdin: bool,
+}
+
 fn main() {
-    let my_input = "(simplify (+ 1 1))";
-    // let tokenizer = Tokenizer::new(my_input);
-    // for token in tokenizer {
-    //     println!("{:?}", token);
-    // }
-    let tokenizer = Tokenizer::new(my_input);
-    let mut parser = Parser::new(tokenizer);
-    match parser.parse_expr() {
-        Ok(node) => {
-            match evaluate(node) {
-                Ok(res) => println!("{}", res),
-                Err(e) => panic!("{:?}", e),
-            };
+    let args = Arguments::parse();
+
+    // Determine the input source. If a file is provided, read from file.
+    // Otherwise, read from standard input.
+    let input: Box<dyn BufRead> = if args.stdin {
+        Box::new(BufReader::new(io::stdin()))
+    } else {
+        match args.file {
+            Some(filepath) => {
+                let file = File::open(filepath).expect("Failed to open file");
+                Box::new(BufReader::new(file))
+            }
+            None => {
+                eprintln!("Error: Neither input file specified, nor `--stdin` flag is given.");
+                std::process::exit(1);
+            }
         }
-        Err(e) => panic!("{}", e),
+    };
+
+    // Read from standard input
+    for line in input.lines() {
+        match line {
+            Ok(line) => {
+                let tokenizer = Tokenizer::new(&line);
+                let mut parser = parser::Parser::new(tokenizer);
+                match parser.parse_expr() {
+                    Ok(node) => {
+                        match evaluate(node) {
+                            Ok(res) => println!("{}", res),
+                            Err(e) => eprintln!("{:?}", e),
+                        };
+                    }
+                    Err(e) => eprintln!("{}", e),
+                }
+            }
+            Err(e) => eprintln!("Error reading line: {}", e),
+        }
     }
 }

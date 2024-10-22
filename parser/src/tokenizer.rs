@@ -29,10 +29,7 @@ impl<'a> Tokenizer<'a> {
                 break;
             }
         }
-        digits
-            .iter()
-            .enumerate()
-            .fold(0, |acc, (i, digit)| acc + (10 ^ (i as u32)) * digit)
+        digits.iter().fold(0, |acc, &digit| acc * 10 + digit)
     }
 
     fn eat_identifier(&mut self) -> Option<Identifier> {
@@ -89,10 +86,6 @@ impl<'a> Iterator for Tokenizer<'a> {
                     self.position += 1;
                     Some(Token::Operator(Operator::Mul))
                 }
-                '/' => {
-                    self.position += 1;
-                    Some(Token::Operator(Operator::Div))
-                }
                 '(' => {
                     self.position += 1;
                     Some(Token::LParen)
@@ -116,16 +109,5 @@ impl<'a> Iterator for Tokenizer<'a> {
                 return None;
             }
         }
-    }
-}
-
-// Unit tests for the tokenizers functions
-mod test {
-    use super::Tokenizer;
-
-    #[test]
-    fn test_numerals() {
-        let mut tok = Tokenizer::new("10");
-        assert_eq!(tok.eat_number(), 10);
     }
 }

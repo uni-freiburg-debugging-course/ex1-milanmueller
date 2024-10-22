@@ -6,40 +6,8 @@ Implement the following grammar
 */
 use crate::tokenizer::{Token, Tokenizer};
 use core::fmt;
-use lib::{Identifier, Operator};
+use lib::{ASTNode, Identifier, Operator};
 use std::iter::Peekable;
-
-// Define Enums and how to print them
-#[derive(Debug)]
-pub enum ASTNode {
-    Numeral(i32),
-    Operator(Operator, Box<ASTNode>, Box<ASTNode>),
-    Simplify(Box<ASTNode>),
-}
-
-impl ASTNode {
-    fn print(&self) -> String {
-        match self {
-            Self::Numeral(number) => format!("{}", number),
-            Self::Operator(op, a, b) => {
-                let op_str = match op {
-                    Operator::Add => "+",
-                    Operator::Sub => "-",
-                    Operator::Mul => "*",
-                    Operator::Div => "/",
-                };
-                format!("{} {} {}", op_str, (*a).print(), (*b).print())
-            }
-            Self::Simplify(inner) => format!("simplify ({})", (*inner).print()),
-        }
-    }
-}
-
-impl fmt::Display for ASTNode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "({})", self.print())
-    }
-}
 
 pub enum ParseError {
     ExpectedNumeral(Option<Token>),
@@ -122,11 +90,6 @@ impl<'a> Parser<'a> {
                 )),
                 Operator::Mul => Ok(ASTNode::Operator(
                     Operator::Mul,
-                    Box::new(self.parse_expr()?),
-                    Box::new(self.parse_expr()?),
-                )),
-                Operator::Div => Ok(ASTNode::Operator(
-                    Operator::Div,
                     Box::new(self.parse_expr()?),
                     Box::new(self.parse_expr()?),
                 )),

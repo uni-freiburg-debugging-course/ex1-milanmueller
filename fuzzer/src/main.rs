@@ -1,10 +1,10 @@
+use clap::Parser;
 use lib::{ASTNode, Operator};
 use rand::{seq::SliceRandom, Rng};
 
 // For now, we use arrays to index our enums to randomly select an option
 // TODO: find a better way to do this...
-const OPERATOR_VARIANTS: &[Operator] =
-    &[Operator::Add, Operator::Sub, Operator::Mul, Operator::Div];
+const OPERATOR_VARIANTS: &[Operator] = &[Operator::Add, Operator::Sub, Operator::Mul];
 
 struct ExpressionGenerator {
     rng: rand::rngs::ThreadRng,
@@ -44,12 +44,6 @@ impl ExpressionGenerator {
                         .gen_range(i32::MAX.saturating_div(x1)..i32::MIN.saturating_div(x1))
                 }
             }
-            Some(Operator::Div) => loop {
-                let n = self.rng.gen_range(i32::MIN..i32::MAX);
-                if n != 0 {
-                    break n;
-                }
-            },
             None => panic!("Choosing random operator failed."),
         };
         match op {
@@ -78,23 +72,26 @@ impl ExpressionGenerator {
                     Box::new(ASTNode::Numeral(x2)),
                 )
             }
-            Some(Operator::Div) => {
-                assert!(x2 != 0);
-                ASTNode::Operator(
-                    Operator::Div,
-                    Box::new(ASTNode::Numeral(x1)),
-                    Box::new(ASTNode::Numeral(x2)),
-                )
-            }
             None => panic!("Choosing random operator failed."),
         }
     }
 }
 
+// Command line arguments
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Arguments {
+    #[arg(short, long, default_value_t = 1)]
+    number: u32,
+}
+
 fn main() {
+    let args = Arguments::parse();
     let mut expression_generator = ExpressionGenerator::new();
-    println!(
-        "{}",
-        ASTNode::Simplify(Box::new(expression_generator.generate_operator_expr()))
-    )
+    for _ in 0..args.number {
+        println!(
+            "{}",
+            ASTNode::Simplify(Box::new(expression_generator.generate_operator_expr()))
+        )
+    }
 }

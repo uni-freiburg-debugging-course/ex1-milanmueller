@@ -9,7 +9,6 @@ pub enum Identifier {
 pub enum Operator {
     Add,
     Sub,
-    Div,
     Mul,
 }
 #[derive(Debug)]
@@ -20,7 +19,7 @@ pub enum ASTNode {
 }
 
 impl ASTNode {
-    fn print(&self) -> String {
+    fn print_rec(&self) -> String {
         match self {
             Self::Numeral(number) => format!("{}", number),
             Self::Operator(op, a, b) => {
@@ -28,17 +27,25 @@ impl ASTNode {
                     Operator::Add => "+",
                     Operator::Sub => "-",
                     Operator::Mul => "*",
-                    Operator::Div => "/",
                 };
-                format!("{} {} {}", op_str, (*a).print(), (*b).print())
+                format!("({} {} {})", op_str, a.print_rec(), b.print_rec())
             }
-            Self::Simplify(inner) => format!("simplify ({})", (*inner).print()),
+            Self::Simplify(inner) => format!("(simplify {})", inner),
         }
     }
 }
 
 impl fmt::Display for ASTNode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "({})", self.print())
+        match self {
+            Self::Numeral(number) => {
+                if *number < 0 {
+                    write!(f, "(- {})", -number)
+                } else {
+                    write!(f, "{}", self.print_rec())
+                }
+            }
+            _ => write!(f, "{}", self.print_rec()),
+        }
     }
 }
