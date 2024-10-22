@@ -10,15 +10,15 @@ use tokenizer::Tokenizer;
 fn main() {
     let my_input = "(simplify (- 123 -12))";
     let mut tokenizer = Tokenizer::new(my_input);
-    loop {
-        match tokenizer.next() {
-            Some(t) => println!("{:?}", t),
-            None => break,
-        }
-    }
-    // let mut parser = Parser::new(tokenizer);
-    // match parser.parse_expr() {
-    //     Ok(node) => println!("{:?}", node),
-    //     Err(e) => panic!("{:?}", e),
+    // loop {
+    //     match tokenizer.next() {
+    //         Some(t) => println!("{:?}", t),
+    //         None => break,
+    //     }
     // }
+    let mut parser = Parser::new(tokenizer);
+    match parser.parse_expr() {
+        Ok(node) => println!("{:?}", node),
+        Err(e) => panic!("{:?}", e),
+    }
 }
