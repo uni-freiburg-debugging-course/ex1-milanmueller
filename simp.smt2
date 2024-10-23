@@ -28,4 +28,3 @@
 (simplify (+ 67 33))
 (simplify (- 654 5111143))
 (simplify (* 812 7))
-
