@@ -5,8 +5,8 @@ Detailed instructions are in the exercise sheet. Following are your checkpoints:
 
 - [x] Implement parser and evaluator
 - [x] Implement a fuzzer
-- [ ] Generate *lots* of random instances with your fuzzer. Your evaluator and z3 must return the same result on generated instances
-- [ ] Provide detailed build instructions for your code so that we can evaluate it
+- [x] Generate *lots* of random instances with your fuzzer. Your evaluator and z3 must return the same result on generated instances
+- [x] Provide detailed build instructions for your code so that we can evaluate it
 
 # Dependencies for Building the Project
 The project written in rust, and building is done using Cargo.
