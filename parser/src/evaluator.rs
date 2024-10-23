@@ -16,30 +16,30 @@ pub fn evaluate(node: ASTNode) -> Result<ASTNode, EvaluationError> {
 fn simplify(node: ASTNode) -> Result<ASTNode, EvaluationError> {
     match node {
         ASTNode::Operator(op, a, b) => match op {
-            Operator::Add => Ok(add(evaluate(*a)?, evaluate(*b)?)?),
-            Operator::Sub => Ok(sub(evaluate(*a)?, evaluate(*b)?)?),
-            Operator::Mul => Ok(mul(evaluate(*a)?, evaluate(*b)?)?),
+            Operator::Add => Ok(add(&evaluate(*a)?, &evaluate(*b)?)?),
+            Operator::Sub => Ok(sub(&evaluate(*a)?, &evaluate(*b)?)?),
+            Operator::Mul => Ok(mul(&evaluate(*a)?, &evaluate(*b)?)?),
         },
         ASTNode::Numeral(_) => Ok(node),
         ASTNode::Simplify(node) => Ok(simplify(*node)?),
     }
 }
 
-fn add(a: ASTNode, b: ASTNode) -> Result<ASTNode, EvaluationError> {
+fn add(a: &ASTNode, b: &ASTNode) -> Result<ASTNode, EvaluationError> {
     Ok(ASTNode::Numeral(evaluate_number(a)? + evaluate_number(b)?))
 }
 
-fn sub(a: ASTNode, b: ASTNode) -> Result<ASTNode, EvaluationError> {
+fn sub(a: &ASTNode, b: &ASTNode) -> Result<ASTNode, EvaluationError> {
     Ok(ASTNode::Numeral(evaluate_number(a)? - evaluate_number(b)?))
 }
 
-fn mul(a: ASTNode, b: ASTNode) -> Result<ASTNode, EvaluationError> {
+fn mul(a: &ASTNode, b: &ASTNode) -> Result<ASTNode, EvaluationError> {
     Ok(ASTNode::Numeral(evaluate_number(a)? * evaluate_number(b)?))
 }
 
-fn evaluate_number(node: ASTNode) -> Result<i32, EvaluationError> {
+fn evaluate_number(node: &ASTNode) -> Result<i32, EvaluationError> {
     match node {
-        ASTNode::Numeral(num) => Ok(num),
+        ASTNode::Numeral(num) => Ok(*num),
         _ => Err(EvaluationError::ExpectedNumeral),
     }
 }
