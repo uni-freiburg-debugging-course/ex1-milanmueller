@@ -29,8 +29,8 @@ struct Arguments {
 fn main() {
     let args = Arguments::parse();
 
-    // Determine the input source. If a file is provided, read from file.
-    // Otherwise, read from standard input.
+    // Determine the input source. If the `stdin` flag is set, we read from stdin.
+    // Otherwise we read from a file that needs to be given
     let input: Box<dyn BufRead> = if args.stdin {
         Box::new(BufReader::new(io::stdin()))
     } else {
@@ -40,7 +40,7 @@ fn main() {
                 Box::new(BufReader::new(file))
             }
             None => {
-                eprintln!("Error: Neither input file specified, nor `--stdin` flag is given.");
+                eprintln!("Error: Please provide input file, or use the `stdin` flag to parse standard input");
                 std::process::exit(1);
             }
         }
